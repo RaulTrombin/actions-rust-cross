@@ -279,6 +279,7 @@ jobs:
           cross-version: ${{ matrix.platform.cross-version }}
           cache-cross-binary: ${{ matrix.platform.cache-cross-binary }}
           target: ${{ matrix.platform.target }}
+          args: "--no-run"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Check binary and cross on ${{ matrix.platform.platform_name }}
         shell: bash
