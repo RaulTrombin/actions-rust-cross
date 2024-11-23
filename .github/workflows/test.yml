@@ -279,8 +279,6 @@ jobs:
           cross-version: ${{ matrix.platform.cross-version }}
           cache-cross-binary: ${{ matrix.platform.cache-cross-binary }}
           target: ${{ matrix.platform.target }}
-          # `cargo bench` is only supported with nightly for now.
-          toolchain: nightly
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Check binary and cross on ${{ matrix.platform.platform_name }}
         shell: bash

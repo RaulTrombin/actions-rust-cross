@@ -25,3 +25,10 @@ pre-build = [
     "rm base.tar.xz",
     "rm -rf /tmp/netbsd",
 ]
+
+[dev-dependencies]
+criterion = { version = "0.5.1"}
+
+[[bench]]
+name = "my_benchmark"
+harness = false
