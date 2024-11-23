@@ -1,3 +1,8 @@
+## 0.0.17
+
+- Added support for running `cargo bench` or `cross bench`. Implemented by @RaulTrombin (Raul Victor
+  Trombin). GH #32.
+
 ## 0.0.16 - 2024-11-17
 
 - Arguments passed in the `args` parameter are now always last when executing `cargo`. This lets you
