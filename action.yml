@@ -11,7 +11,7 @@ inputs:
     default: "."
   command:
     description: |
-      The commands to run (one of "build", "test", or "both").
+      The commands to run. This must be one of "build", "test", "both" (build and test), or "bench".
     default: build
   target:
     description: The target platform
@@ -91,12 +91,16 @@ runs:
       id: set-build-command
       shell: bash
       run: set-build-command.sh ${{ steps.set-cross-dir.outputs.cross-dir }}
+    - name: Determine which cargo commands to run
+      id: determine-cargo-commands
+      shell: bash
+      run: determine-cargo-commands.sh ${{ inputs.command }}
     - name: Run tests (*nix)
       working-directory: ${{ inputs.working-directory }}
       shell: bash
       run: |
         ${{ steps.set-build-command.outputs.build-command }} +${{inputs.toolchain}} test --target ${{ inputs.target }} ${{ inputs.args }}
-      if: inputs.command != 'build' && runner.os != 'Windows'
+      if: steps.determine-cargo-commands.outputs.test == 'true' && runner.os != 'Windows'
     # We want to run in Powershell on Windows to make sure we compile in a
     # native Windows environment. Some things won't compile properly under
     # msys, notably OpenSSL, which is compiled locally when using the
@@ -106,19 +110,31 @@ runs:
       shell: powershell
       run: |
         & ${{ steps.set-build-command.outputs.build-command }} +${{inputs.toolchain}} test --target ${{ inputs.target }} ${{ inputs.args }}
-      if: inputs.command != 'build' && runner.os == 'Windows'
+      if: steps.determine-cargo-commands.outputs.test == 'true' && runner.os == 'Windows'
+    - name: Run benchmarks (*nix)
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+      run: |
+        ${{ steps.set-build-command.outputs.build-command }} +${{inputs.toolchain}} bench --target ${{ inputs.target }} ${{ inputs.args }}
+      if: steps.determine-cargo-commands.outputs.bench == 'true' && runner.os != 'Windows'
+    - name: Run benchmarks (Windows)
+      working-directory: ${{ inputs.working-directory }}
+      shell: powershell
+      run: |
+        & ${{ steps.set-build-command.outputs.build-command }} +${{inputs.toolchain}} bench --target ${{ inputs.target }} ${{ inputs.args }}
+      if: steps.determine-cargo-commands.outputs.bench == 'true' && runner.os == 'Windows'
     - name: Build binary (*nix)
       working-directory: ${{ inputs.working-directory }}
       shell: bash
       run: |
         ${{ steps.set-build-command.outputs.build-command }} +${{inputs.toolchain}} build ${{ inputs.args }} --target ${{ inputs.target }}
-      if: inputs.command != 'test' && runner.os != 'Windows'
+      if: steps.determine-cargo-commands.outputs.build == 'true' && runner.os != 'Windows'
     - name: Build binary (Windows)
       working-directory: ${{ inputs.working-directory }}
       shell: powershell
       run: |
         & ${{ steps.set-build-command.outputs.build-command }} +${{inputs.toolchain}} build ${{ inputs.args }} --target ${{ inputs.target }}
-      if: inputs.command != 'test' && runner.os == 'Windows'
+      if: steps.determine-cargo-commands.outputs.build == 'true' && runner.os == 'Windows'
     - name: Strip binary
       working-directory: ${{ inputs.working-directory }}
       shell: bash
